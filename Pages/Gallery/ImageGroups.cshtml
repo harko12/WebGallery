@@ -1,0 +1,296 @@
+﻿@page
+@model WebGallery.Pages.Gallery.ImageGroupsModel
+@using WebGallery.Models
+@using WebGallery.UIBL
+
+@{
+    Layout = "_DisplayGallery.cshtml";
+}
+
+@{
+    string dateString = ViewBag.CurrentDate;
+    var datesplit = dateString.Split('/');
+    var month = datesplit[0];
+    var day = datesplit[1];
+    var year = datesplit[2];
+    DateGroups group = ViewBag.GroupStyle;
+    var displayImages = new List<Image>();
+    ViewBag.Title = "WebGallery";
+
+    bool hasYear = false, hasMonth = false, hasDay = false;
+    if (Model.Groups.ContainsKey(year))
+    {
+        hasYear = true;
+    }
+
+    if (hasYear && Model.Groups[year].ContainsKey(month))
+    {
+        hasMonth = true;
+    }
+
+    if (hasYear && hasMonth && Model.Groups[year][month].ContainsKey(day))
+    {
+        hasDay = true;
+    }
+
+    switch (group)
+    {
+
+        case DateGroups.Date:
+            if (!hasDay) { break; }
+            displayImages.AddRange(Model.Groups[year][month][day]);
+            break;
+        case DateGroups.Month:
+            if (!hasMonth) { break; }
+            foreach (var dayList in Model.Groups[year][month].Values)
+            {
+                displayImages.AddRange(dayList);
+            }
+            break;
+        case DateGroups.Year:
+            if (!hasYear) { break; }
+            foreach (var monthList in Model.Groups[year].Values)
+            {
+                foreach (var dayList in monthList.Values)
+                {
+                    displayImages.AddRange(dayList);
+                }
+            }
+            break;
+    }
+}
+
+@section scripts {
+    @*<script src="~/Scripts/jquery.mousewheel-3.0.6.pack.js"></script>*@
+    <script type="text/javascript">
+        $(document).ready(function () {
+            InitImages();
+        });
+
+        function InitImages() {
+            $("#ShowImage").fancybox({
+                helpers:
+                {
+                    title:
+                    {
+                        type: 'float'
+                    }
+                }
+            });
+
+            $("#ShowVideo").fancybox({
+                helpers:
+                {
+                    title:
+                    {
+                        type: 'float'
+                    }
+                },
+                content: '<video height="100%" controls><source src="" type="video/mp4" /></video>',
+                openEffect: 'elastic',
+                closeEffect: 'elastic',
+                fitToView: true,
+                nextSpeed: 0, //important
+                prevSpeed: 0, //important
+                beforeShow: function () {
+                    $(".fancybox-inner").find('source').attr('src', this.href);
+                }
+
+            });
+
+            $('.imageGallery').fancybox({
+                fitToView: false,
+                width: '600px',
+                height: '400px',
+                autoSize: false,
+                closeClick: false,
+                openEffect: 'none',
+                closeEffect: 'none',
+                padding: 0,
+                closeBtn: false,
+                'afterClose': function () {
+                    window.location.reload();
+                },
+            });
+        }
+    </script>
+
+}
+
+@section sidebar{
+    <script type="text/javascript">
+        var dirSet = JSON.parse('@Html.Raw(ViewBag.DirSet)');
+        var curDay = '@day';
+        var curMonth = '@month';
+        var curYear = '@year';
+        var $popup;
+        var $modal;
+        var $galleryModal;
+
+        $(document).ready(function ()
+        {
+            $popup = $("#datepicker-popup");
+            $modal = $("#datepicker-modal");
+            $galleryModal = $("#gallery-modal");
+
+            UpdateDateLabel();
+
+        });
+
+        function ShowYear(elem)
+        {
+            var numList = Object.keys(dirSet).sort();
+            ShowNumbers('year', numList, elem);
+        }
+
+        function ShowMonth(elem)
+        {
+            if (curYear == "0000")
+            {
+                return;
+            }
+            var numList = Object.keys(dirSet[curYear]).sort();
+            ShowNumbers('month', numList, elem);
+        }
+        function ShowDay(elem)
+        {
+            if (curMonth == "00")
+            {
+                return;
+            }
+            var numList = Object.keys(dirSet[curYear][curMonth]).sort();
+            ShowNumbers('day', numList, elem);
+        }
+
+        function ShowNumbers(dataType, numberList, elem)
+        {
+            // clear out old values
+            $popup.find(".numberpicker-value").remove();
+            var $none = $popup.find(".numberpicker-value-default")
+            $none.data("numbertype", dataType);
+            if (dataType === 'year') $none.hide();
+            else $none.show();
+            for (var lcv = 0, length = numberList.length; lcv < length; lcv++)
+            {
+                var html = "<div class='numberpicker-value' data-value='"+ numberList[lcv] +"' data-numbertype='" + dataType + "' onclick='UpdateDatepicker(this);'>" + numberList[lcv] + "</div>"
+                $popup.append(html);
+            }
+            $modal.show();
+            var targetPos = $(elem).position();
+            $popup.show();
+            $popup.css({ position: 'absolute', top: targetPos.top, left: targetPos.left });
+
+
+        }
+
+        function UpdateDatepicker(elem)
+        {
+            var that = $(elem);
+            var nt = that.data("numbertype");
+            switch(nt)
+            {
+                case "year":
+                    curYear = that.data("value");
+                    curMonth = "00";
+                    curDay = "00";
+                    break;
+                case "month":
+                    curMonth = that.data("value");
+                    curDay = "00";
+                    break;
+                case "day":
+                    curDay = that.data("value");
+                    break;
+            }
+            $popup.hide();
+            $modal.hide();
+            UpdateDateLabel();
+            $("#datepicker-update-button").show();
+        }
+
+        function ClickedOnModal()
+        {
+            $popup.hide();
+            $modal.hide();
+            UpdateDateLabel();
+        }
+
+        function UpdateDateLabel()
+        {
+            $("#datepicker-year").text(curYear);
+            $("#datepicker-month").text('/' + (curMonth == "00" ? "**" : curMonth));
+            $("#datepicker-day").text('/' + (curDay == "00" ? "**" : curDay));
+        }
+
+        function UpdatePicturesForDate()
+        {
+            $galleryModal.show();
+            var selectedDate = curMonth + "/" + curDay + "/" + curYear;
+            var type = 3; // default to date
+            if (curDay === "00") type = 2; // downgrade to month
+
+            if (curMonth == + "00") type = 1; // downgrade to yearly
+
+            var def = $.ajax({
+                type: 'POST',
+                url: '/Gallery/ImageGroups',
+                data: { dirSet: $('#_dirset').val(), date: selectedDate, group: type },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result)
+                {
+                    var newImages = $(result).find("div.container.body-content").find("#imagewrapper").html();
+                    var $imgDiv = $("#imagewrapper");
+                    $imgDiv.parent().animate({ scrollTop: 0 }, "slow");
+                    $imgDiv.html(newImages);
+                    $("#datepicker-update-button").hide();
+                    InitImages();
+                    lazyload();
+                },
+                failure: function (response) {
+                    alert(response);
+                },
+                complete: function () {
+                    $galleryModal.hide();
+                }
+            })
+        }
+
+    </script>
+    <input type="hidden" id="_dirset" value='@Html.Raw(ViewBag.DirSet)' />
+    <div class="sidebar-header">
+        <div class="sidebar-header">
+            <div id="datepicker">
+                <label id="datepicker-year" onclick="ShowYear(this);"></label><label id="datepicker-month" onclick="ShowMonth(this);"></label><label id="datepicker-day" onclick="ShowDay(this);"></label>
+                <div id="datepicker-update-button" class="btn btn-lg btn-primary" onclick="UpdatePicturesForDate();" style="display:none;"><i class="fa fa-play faa-horizontal animated"></i></div>
+            </div>
+        </div>
+        <div id="datepicker-popup" style="display:none;">
+            <div class="numberpicker-value-default" data-value="00" onclick='UpdateDatepicker(this);'>
+                None
+            </div>
+        </div>
+        <div id="datepicker-modal" class="datepicker-modal" style="display:none;" onclick="ClickedOnModal();">
+        </div>
+    </div>
+
+}
+
+<div id="imagewrapper" class="" style="float:left; width: 100%;">
+    @await Html.PartialAsync("ImageGroup", Model.GetImageGroupModel(displayImages))
+</div>
+
+
+
+
+
+
+
+
+

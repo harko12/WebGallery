@@ -1,0 +1,12 @@
+/*
+add in the connection strings for you authentication db and your gallery db
+e.g. Server=<server>;Database=<dbname>;Uid=<user>;Pwd=<pass>
+
+then copy this file to customsettings.json
+*/
+{
+  "ConnectionStrings": {
+    "AuthConnection": "connection string here",
+    "WebGalleryConnection": "connection string here"
+  }
+}

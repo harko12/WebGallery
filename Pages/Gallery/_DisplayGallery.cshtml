@@ -1,0 +1,15 @@
+﻿@{
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+
+<div class="wrapper">
+    <nav id="sidebar">
+        @RenderSection("sidebar", required: true)
+    </nav>
+    <div id="content" class="container body-content LazyLoadWrapper">
+        @RenderBody()
+    </div>
+</div>
+
+@RenderSection("scripts", required: false)

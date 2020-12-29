@@ -1,0 +1,51 @@
+﻿@*@page*@
+@model WebGallery.Pages.Gallery.ImageGroupModel
+
+@{
+    var reneredImagecount = 0;
+    var maxIMagesPerPage = 1000;
+    var lastDate = "0000/00";
+}
+@foreach (var image in Model.Images)
+{
+    var checkDate = string.Format("{0}/{1}", image.DateYearString, image.DateMonthString);
+    bool IsVideo = image.Filename.ToLowerInvariant().Contains(".mp4");
+    if (IsVideo) { continue; }
+
+    if (reneredImagecount >= maxIMagesPerPage)
+    {
+        break;
+    }
+    else
+    {
+        reneredImagecount++;
+    }
+    if (checkDate != lastDate)
+    {
+        lastDate = checkDate;
+        <div class="list-group-item-heading" style="float:left; width: 100%;">
+            @checkDate
+        </div>
+    }
+<div class="@(IsVideo ? "div-video" : "div-image")" style="margin:10px; float:left; height:200px; overflow:hidden; width:200px;">
+    @if (image.Filename.ToLowerInvariant().Contains(".mp4"))
+        {
+
+    <a id="ShowVideo" class="fancybox-button" data-rel="fancybox-button"
+       title="video" href="@Url.Content("~/images/"+ image.Path +"/" + image.Filename)">
+        <video width="200" height="200">
+            <source src="@Url.Content("~/images/"+ image.Path +"/" + image.Filename)" type="video/mp4" />
+        </video>
+    </a>
+    <i class="fa fa-video-camera"></i>
+        }
+        else
+        {
+    <a id="ShowImage" data-fancybox title="Photo" href="@Url.Content("~/images/"+ image.Path +"/" + image.Filename)?mode=max&width=2048&height=2048&autorotate=true">
+        <img src="@Url.Content("~/content/images/loading_content.gif")" 
+            data-src="@Url.Content("~/images/" + image.Path  + "/" + image.Filename)?mode=pad&height=200&width=200&autorotate=true&bgcolor=white" 
+            class="lazyload imgBox" />
+    </a>
+        }
+</div>
+}
