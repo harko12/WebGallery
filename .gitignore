@@ -341,3 +341,4 @@ healthchecksdb
 
 # config files
 customsettings.json
+*.xcf
