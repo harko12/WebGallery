@@ -74,7 +74,7 @@ namespace WebGallery
             app.UseHttpsRedirection();
             
             app.UseImageflow(new ImageflowMiddlewareOptions()
-                .SetMapWebRoot(false).MapPath("/images", @"\\mansun\shared_photos", true)
+                .SetMapWebRoot(false).MapPath("/images", Configuration["ImageFilePath"], true)
                 .SetMyOpenSourceProjectUrl("https://github.com/imazen/imageflow-dotnet-server")
                 .SetAllowDiskCaching(true)
                 );

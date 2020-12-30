@@ -8,5 +8,6 @@ then copy this file to customsettings.json
   "ConnectionStrings": {
     "AuthConnection": "connection string here",
     "WebGalleryConnection": "connection string here"
-  }
+  },
+  "ImageFilePath": "\\path\\to\\photos"
 }
