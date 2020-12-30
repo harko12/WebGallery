@@ -234,12 +234,6 @@
                 type: 'POST',
                 url: '@Url.Content("~/Gallery/ImageGroups")',
                 data: { dirSet: $('#_dirset').val(), date: selectedDate, group: type },
-                /*
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader("XSRF-TOKEN",
-                        $('input:hidden[name="__RequestVerificationToken"]').val());
-                },
-                */
                 headers: {
                     RequestVerificationToken:
                         $('input:hidden[name="__RequestVerificationToken"]').val()
