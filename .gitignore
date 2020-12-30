@@ -342,3 +342,5 @@ healthchecksdb
 # config files
 customsettings.json
 *.xcf
+
+web.config*
