@@ -54,6 +54,7 @@ namespace WebGallery
             // If you're deploying to azure, provide a disk cache folder *not* inside ContentRootPath
             // to prevent the app from recycling whenever folders are created.
             services.AddImageflowDiskCache(new DiskCacheOptions(Path.Combine(homeFolder, "WebGallery_cache")));
+            services.AddAntiforgery();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

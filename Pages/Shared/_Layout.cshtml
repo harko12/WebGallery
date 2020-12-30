@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WebGallery</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="@Url.Content("~/lib/bootstrap/dist/css/bootstrap.min.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/css/site.css")" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/css/ImageGallery.css" />
-    <link rel="stylesheet" href="/css/jquery.fancybox.css" />
-    <script src="/lib/jquery/dist/jquery.min.js"></script>
-    <script src="/lib/jquery/lazyload-2.0.0-rc.2/lazyload.js"></script>
+    <link rel="stylesheet" href="@Url.Content("~/css/ImageGallery.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/css/jquery.fancybox.css")" />
+    <script src="@Url.Content("~/lib/jquery/dist/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/jquery/lazyload-2.0.0-rc.2/lazyload.js")"></script>
 </head>
 <body>
     <header>
@@ -37,7 +37,6 @@
                 </div>
             </div>
         </nav>
-    <script src="/lib/jquery/dist/jquery.min.js"></script>
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -51,9 +50,9 @@
         </div>
     </footer>
 
-    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/site.js" asp-append-version="true"></script>
-    <script src="/js/jquery.fancybox.js" asp-append-version="true"></script>
+    <script src="@Url.Content("~/lib/bootstrap/dist/js/bootstrap.bundle.min.js")"></script>
+    <script src="@Url.Content("~/js/site.js")" asp-append-version="true"></script>
+    <script src="@Url.Content("~/js/jquery.fancybox.js")" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 </body>
