@@ -233,7 +233,7 @@
             var def = $.ajax({
                 type: 'POST',
                 url: '@Url.Content("~/Gallery/ImageGroups")',
-                data: { dirSet: $('#_dirset').val(), date: selectedDate, group: type },
+                data: { date: selectedDate, group: type },
                 headers: {
                     RequestVerificationToken:
                         $('input:hidden[name="__RequestVerificationToken"]').val()
@@ -259,7 +259,6 @@
 
     </script>
     @Html.AntiForgeryToken()
-    <input type="hidden" id="_dirset" value='@Html.Raw(ViewBag.DirSet)' />
     <div class="sidebar-header">
         <div class="sidebar-header">
             <div id="datepicker">

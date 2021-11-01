@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using WebGallery.Models;
 using Microsoft.AspNetCore.Hosting;
-using WebGallery.Data;
 using WebGallery.UIBL;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace WebGallery.Pages.Gallery
 {
@@ -16,11 +15,14 @@ namespace WebGallery.Pages.Gallery
     {
         private readonly WebGallery.Data.GalleryDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private IMemoryCache _cache;
+        private string groupKey = "_image_groups";
 
-        public ImageGroupsModel(WebGallery.Data.GalleryDbContext context, IWebHostEnvironment env)
+        public ImageGroupsModel(WebGallery.Data.GalleryDbContext context, IWebHostEnvironment env, IMemoryCache cache)
         {
             _context = context;
             _env = env;
+            _cache = cache;
         }
 
         public ImageGroupModel GetImageGroupModel(List<Image> images)
@@ -63,6 +65,14 @@ namespace WebGallery.Pages.Gallery
                 }
             }
 
+            // Set cache options.
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                // Keep in cache for this time, reset time if accessed.
+                .SetSlidingExpiration(TimeSpan.FromDays(1));
+
+            // Save data in cache.
+            _cache.Set(groupKey, dirSet, cacheEntryOptions);
+
             //ViewBag.GroupList = groups;
             ViewData["DirSet"] =  JsonSerializer.Serialize(dirSet);
             //return DisplayImagesForDate(currentDate, (int)DateGroups.Month);
@@ -82,11 +92,20 @@ namespace WebGallery.Pages.Gallery
             }
         }
 
-        public void OnPost(string dirSet, string date, int group)
+        public void OnPost(string date, int group)
         {
-            Groups = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, Dictionary<string, List<Image>>>>>(dirSet);
+            var cachedGroups = new Dictionary<string, Dictionary<string, Dictionary<string, List<Image>>>>();
+            if (!_cache.TryGetValue(groupKey, out cachedGroups))
+            {
+                this.OnGet();
+            }
+            else
+            {
+                Groups = cachedGroups;
+            }
 
-            ViewData["DirSet"] = dirSet;
+            //Groups = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, Dictionary<string, List<Image>>>>>(cachedGroups);
+
             ViewData["galleryName"] = "testgallery";
             ViewData["CurrentDate"] = date;
             ViewData["GroupStyle"] = (DateGroups)group;
