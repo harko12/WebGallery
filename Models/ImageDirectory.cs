@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MetadataExtractor;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using WebGallery.Data;
@@ -150,16 +152,46 @@ namespace WebGallery.Models
             }
         }
 
+        public DateTime? GetPictureOriginalDate(string imagePath)
+        {
+            try
+            {
+                var directories = ImageMetadataReader.ReadMetadata(imagePath);
+                foreach (var d in directories)
+                {
+                    if (d.Name != "Exif SubIFD")
+                    {
+                        continue;
+                    }
+                    foreach (var t in d.Tags)
+                    {
+                        if (t.Name == "Date/Time Original")
+                        {
+                            //2012:08:18 00:54:29
+                            var originalDate_string = t.Description;
+                            var originalDate = DateTime.ParseExact(originalDate_string, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture);
+                            return originalDate;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // nothign right now
+            }
+            return null;
+        }
+
         public void UpdateImageDirectory(GalleryDbContext db, ImageGallery gallery, string subDirPath, string drivePath)
         {
             var imagePath = drivePath; // + "\\" + subDirPath;
 
-            var imageFiles = Directory.GetFiles(imagePath);
-            var imageDirectories = Directory.GetDirectories(imagePath);
+            var imageFiles = System.IO.Directory.GetFiles(imagePath);
+            var imageDirectories = System.IO.Directory.GetDirectories(imagePath);
             var path = subDirPath;
             foreach (var item in imageFiles)
             {
-                var regexPattern = @"\.(?i:)(?:jpg|gif|mp4|jpeg)$";
+                var regexPattern = @"\.(?i:)(?:jpg|gif|mp4|jpeg|png)$";
                 if (!System.Text.RegularExpressions.Regex.IsMatch(item, regexPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                 {
                     continue;
@@ -168,44 +200,33 @@ namespace WebGallery.Models
                 var query = (from img in gallery.ImageList
                              where img.Filename == itemFilename
                              select img).Any();
+
                 if (query)
                 {
                     continue;
                 }
 
-                var createDate = File.GetCreationTime(item);
+                var pictureDate = this.GetPictureOriginalDate(imagePath + "\\" + itemFilename);
+                if (pictureDate == null)
+                {
+                    pictureDate = File.GetCreationTime(item);
+                }
                 var newImg = new WebGallery.Models.Image()
                 {
                     Path = path,
                     Filename = itemFilename,
-                    DateTaken = createDate // not sure what to default
+                    DateTaken = (DateTime)pictureDate // not sure what to default
                 };
+                /*
                 if (!item.Contains(".mp4"))
                 {
                     newImg.DateTaken = File.GetLastWriteTime(item);
-                    /*
-                    try
-                    {
-                        var fileURI = item;
-                        FileStream fs = new FileStream(fileURI, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        var img = BitmapFrame.Create(fs);
-                        var md = (BitmapMetadata)img.Metadata;
-                        DateTime newDate;
-                        if (DateTime.TryParse(md.DateTaken, out newDate))
-                        {
-                            newImg.DateTaken = newDate;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        var msg = e.Message;
-                    }
-                    */
                 }
                 else
                 {
                     newImg.DateTaken = File.GetLastWriteTime(item);
                 }
+                */
                 newImg.DateString = newImg.DateTaken.ToString(DateFormat);
                 newImg.DateMonthString = newImg.DateTaken.ToString(MonthFormat);
                 newImg.DateYearString = newImg.DateTaken.ToString(YearFormat);

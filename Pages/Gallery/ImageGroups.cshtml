@@ -223,6 +223,7 @@
 
         function UpdatePicturesForDate()
         {
+            $("#datepicker-update-button").hide();
             $galleryModal.show();
             var selectedDate = curMonth + "/" + curDay + "/" + curYear;
             var type = 3; // default to date
@@ -244,7 +245,6 @@
                     var $imgDiv = $("#imagewrapper");
                     $imgDiv.parent().animate({ scrollTop: 0 }, "slow");
                     $imgDiv.html(newImages);
-                    $("#datepicker-update-button").hide();
                     InitImages();
                     lazyload();
                 },
